@@ -1,0 +1,50 @@
+# This task lists installs a apache within
+# a podman container
+# This apache acts as a reverse proxy entry point for a ecodex
+# installation and should show how a best practice installation
+# should look like
+- name: Create the system group for our apache
+  ansible.builtin.group:
+    name: apache_{{env_stage}}
+    comment: Group for eCodex RP apache in {{env_stage}}
+    system: true    
+- name: Create the system user for our apache
+  ansible.builtin.user:
+    name:c
+    comment: User for eCodex RP apache in {{env_stage}}
+    group: apache_{{env_stage}}
+    system: true
+    shell: /bin/false
+- name: Create products folder
+  ansible.builtin.file:
+    path: "{{item}}"
+    state: directory
+    owner: apache_{{env_stage}}
+    group: apache_{{env_stage}}
+  loop:
+    - "/products/apache_{{env_stage}}"
+    - "/products/apache_{{env_stage}}/config"
+    - "/products/apache_{{env_stage}}/logs"
+- name: Download Image so its present on the target machine
+  containers.podman.podman_image:
+    name: "{{image.name}}"
+    tag: "{{image.tag}}"
+- name: Install apache_{{env_stage}}.container file
+  ansible.builtin.template:
+    src: apache.container.j2
+    dst: "/etc/containers/systemd/apache_{{env_stage}}.container"
+    owner: apache_{{env_stage}}
+    group: apache_{{env_stage}}
+    mode: "440"
+- name: Install apache_{{env_stage}} httpd.conf file
+  ansible.builtin.template:
+    src: httpd.conf.j2
+    dst: "/products/apache_{{env_stage}}/config/httpd.conf"
+    owner: apache_{{env_stage}}
+    group: apache_{{env_stage}}
+    mode: "440"
+# TODO: create certificates...
+
+
+
+

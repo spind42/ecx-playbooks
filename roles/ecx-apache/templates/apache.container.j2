@@ -1,0 +1,15 @@
+[Unit]
+Description=A ecodex apache reverse proxy container
+
+[Container]
+Image={{image.name}}:{{image.tag}}
+User=apache_{{env_stage}}
+Group=apache_{{env_stage}}
+PublishPort={{publish_port}}:8443
+Volume=/products/apache_{{env_stage}}/config:/usr/local/apache2/conf/
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Restart=always
